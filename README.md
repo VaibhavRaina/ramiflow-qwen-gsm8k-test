@@ -1,8 +1,9 @@
 # Ramiflow Qwen GSM8K validation
 
 This public, secret-free repository validates Ramiflow's managed GPU lifecycle with a reproducible
-Qwen3-0.6B GSM8K baseline and a LoRA child experiment. The runtime container has no network access;
-the model and dataset are downloaded at image-build time from immutable revisions.
+Qwen3-0.6B GSM8K baseline and LoRA child experiments. The candidate container has no network access
+and contains only the public training split. A separate backend-controlled evaluator image owns the
+hidden evaluation split and returns only the aggregate required metric.
 
 ## Reproducibility
 
@@ -13,5 +14,6 @@ the model and dataset are downloaded at image-build time from immutable revision
 - Required hosted metric: `gsm8k_accuracy`
 
 Run unit tests with `python -m unittest discover -s tests -p 'test_*.py'`. Ramiflow runs
-`python train_eval.py` inside the digest-pinned image and persists `metrics.json`, detailed
-per-example logs, and the adapter checkpoint.
+`python train_eval.py` inside the digest-pinned candidate image, persists the adapter checkpoint,
+and evaluates that checkpoint in the isolated trusted evaluator. Hidden examples and evaluator
+stdout are never returned to the candidate or synchronized into the experiment DAG.

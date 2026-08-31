@@ -3,7 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from experiment_config import format_training_example, load_experiment_config
+from experiment_config import ExperimentConfig, format_training_example, load_experiment_config
+import train_eval
 
 
 class ExperimentContractTest(unittest.TestCase):
@@ -78,6 +79,31 @@ class ExperimentContractTest(unittest.TestCase):
                 "role": "assistant",
                 "content": "Three plus four is seven.\n#### 7",
             }],
+        })
+
+    def test_candidate_stage_writes_only_a_checkpoint(self) -> None:
+        runner = getattr(train_eval, "run_candidate", None)
+        self.assertTrue(callable(runner), "candidate-only runner is required")
+        config = self.valid_config()
+        config["mode"] = "baseline"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path = root / "experiment.json"
+            checkpoint = root / "checkpoint.bin"
+            config_path.write_text(json.dumps(config), encoding="utf-8")
+            runner(config_path, checkpoint, lambda: (None, None, None, lambda _seed: None))
+
+            self.assertTrue(checkpoint.is_file())
+            self.assertFalse((root / "metrics.json").exists())
+            self.assertFalse((root / "details.json").exists())
+
+    def test_lora_checkpoint_records_adapter_configuration(self) -> None:
+        config = ExperimentConfig(**self.valid_config())
+
+        self.assertEqual(train_eval.checkpoint_metadata(config), {
+            "format": "ramiflow-peft-v1",
+            "lora_alpha": "32",
+            "lora_rank": "16",
         })
 
 

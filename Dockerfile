@@ -6,8 +6,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     VIRTUAL_ENV=/opt/ramiflow/venv \
     PATH=/opt/ramiflow/venv/bin:${PATH} \
     RAMIFLOW_MODEL_PATH=/opt/ramiflow/model \
-    RAMIFLOW_TRAIN_DATASET_PATH=/opt/ramiflow/data/train \
-    RAMIFLOW_EVAL_DATASET_PATH=/opt/ramiflow/data/eval
+    RAMIFLOW_TRAIN_DATASET_PATH=/opt/ramiflow/data/train
 
 WORKDIR /opt/ramiflow/build
 COPY requirements.txt ./requirements.txt
@@ -32,9 +31,7 @@ tokenizer.save_pretrained("/opt/ramiflow/model")
 model.save_pretrained("/opt/ramiflow/model", safe_serialization=True)
 
 train = load_dataset(dataset_id, "main", revision=dataset_revision, split="train")
-test = load_dataset(dataset_id, "main", revision=dataset_revision, split="test")
 train.select(range(512)).save_to_disk("/opt/ramiflow/data/train")
-test.select(range(64)).save_to_disk("/opt/ramiflow/data/eval")
 PY
 
 WORKDIR /workspace
