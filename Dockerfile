@@ -11,7 +11,10 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 
 WORKDIR /opt/ramiflow/build
 COPY requirements.txt ./requirements.txt
-RUN /usr/bin/python3 -m venv --system-site-packages "${VIRTUAL_ENV}" \
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends python3.12-venv \
+    && rm -rf /var/lib/apt/lists/* \
+    && /usr/bin/python3 -m venv --system-site-packages "${VIRTUAL_ENV}" \
     && python -m pip install --requirement requirements.txt
 
 RUN python - <<'PY'
