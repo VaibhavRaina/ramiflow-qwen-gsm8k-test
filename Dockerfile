@@ -1,15 +1,18 @@
-FROM pytorch/pytorch:2.13.0-cuda12.6-cudnn9-runtime
+FROM pytorch/pytorch:2.13.0-cuda12.6-cudnn9-runtime@sha256:6acf597eeb8e376a96580dde4952f37cc017fef732bb40bfc73f28f25e3f64b4
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     HF_HOME=/opt/ramiflow/huggingface \
+    VIRTUAL_ENV=/opt/ramiflow/venv \
+    PATH=/opt/ramiflow/venv/bin:${PATH} \
     RAMIFLOW_MODEL_PATH=/opt/ramiflow/model \
     RAMIFLOW_TRAIN_DATASET_PATH=/opt/ramiflow/data/train \
     RAMIFLOW_EVAL_DATASET_PATH=/opt/ramiflow/data/eval
 
 WORKDIR /opt/ramiflow/build
 COPY requirements.txt ./requirements.txt
-RUN python -m pip install --requirement requirements.txt
+RUN /usr/bin/python3 -m venv --system-site-packages "${VIRTUAL_ENV}" \
+    && python -m pip install --requirement requirements.txt
 
 RUN python - <<'PY'
 from datasets import load_dataset
